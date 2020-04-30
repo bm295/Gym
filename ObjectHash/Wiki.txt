@@ -1,3 +1,0 @@
-﻿BinaryFormatter alternatives:
-https://medium.com/@neuecc/zeroformatter-fastest-c-serializer-and-infinitely-fast-deserializer-for-net-88e752803fe9
-https://github.com/neuecc/ZeroFormatter
