@@ -1,21 +1,19 @@
 ﻿@page "/todo"
 
 @using BlazorApp.Data
+@inject BlazorApp.Service.TodoItemService _todoItemService
 
-<h1>Todo (@todos.Where(todo => !todo.IsDone).Count())</h1>
+@code{
+    private List<TodoItem> _data;
+    private string _current;
+    private TodoItem _item;
 
-<ul>
-    @foreach (var todo in todos)
+    protected override void OnInitialized()
     {
-        <li>
-            <input type="checkbox" @bind="@todo.IsDone" />
-            <input @bind="@todo.Title" />            
-        </li>
+        _data = _todoItemService.GetData();
+        _item = _data != null && _data.Count > 0 ? _data[0] : null;
     }
-</ul>
-
-<input placeholder="Something todo" @bind="@newTodo" />
-<button @onclick="AddTodo">Add todo</button>
+}
 
 @functions {
     IList<TodoItem> todos = new List<TodoItem>();
@@ -31,3 +29,39 @@
     }
 }
 
+<h1>Todo (@todos.Where(todo => !todo.IsDone).Count())</h1>
+
+<ul>
+    @foreach (var todo in todos)
+    {
+        <li>
+            <input type="checkbox" @bind="@todo.IsDone" />
+            <input @bind="@todo.Title" />
+        </li>
+    }
+</ul>
+
+<input placeholder="Something todo" @bind="@newTodo" />
+<button @onclick="AddTodo">Add todo</button>
+
+<p></p>
+
+<ol class="list-group">
+    @foreach (var i in _data)
+    {
+        <li>
+            <div class="input-group mb-3 @(i.IsDone ? "border border-success" : "")">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">
+                        <input type="checkbox" @bind="i.IsDone" class="custom-checkbox" />
+                    </span>
+                </div>
+                <input type="text" @bind="i.Title" class="form-control" placeholder="Todo" />
+                <input type="text" @bind="i.Note" class="form-control" placeholder="Note" />
+                <div class="input-group-append">
+                    <button class="btn btn-outline-danger" type="button">Delete</button>
+                </div>
+            </div>
+        </li>
+    }
+</ol>
