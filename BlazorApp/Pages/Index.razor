@@ -1,7 +1,27 @@
-﻿@page "/"
+@page "/"
+@inject BlazorApp.Data.ThreadSafeCounterDemo CounterDemo
 
-<h1>Hello, world!</h1>
+<h1>.NET 10 Thread-Safe Counter Demo</h1>
 
-Welcome to your new app.
+<p>
+    This sample runs four parallel operations. Each operation increments the same counter 100,000 times
+    while synchronized with <code>lock</code>.
+</p>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<button class="btn btn-primary" @onclick="RunDemo">Run demo</button>
+
+@if (result is not null)
+{
+    <p class="mt-3">
+        Final counter value: <strong>@result</strong>
+    </p>
+}
+
+@code {
+    private int? result;
+
+    private void RunDemo()
+    {
+        result = CounterDemo.Run();
+    }
+}
