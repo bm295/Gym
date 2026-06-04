@@ -42,7 +42,7 @@ In the app, this logic is implemented in `ThreadSafeCounterDemo` and invoked fro
 From the repository root:
 
 ```bash
-cd BlazorApp
+cd Gym.WebUI
 dotnet restore
 dotnet run
 ```
@@ -52,5 +52,5 @@ Then open the URL shown in the terminal (typically `https://localhost:5001` or a
 ## Build
 
 ```bash
-dotnet build ObjectHash.sln
+dotnet build Gym.sln
 ```

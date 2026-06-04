@@ -1,13 +1,14 @@
-using BlazorApp.Data;
-using BlazorApp.Service;
+using Gym.Application;
+using Gym.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
-builder.Services.AddSingleton<TodoItemService>();
+builder.Services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
+builder.Services.AddSingleton<ITodoItemService, TodoItemService>();
 builder.Services.AddSingleton<ThreadSafeCounterDemo>();
+builder.Services.AddHttpClient<IExternalApiService, ExternalApiService>();
 
 var app = builder.Build();
 

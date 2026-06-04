@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Gym.Application;
+using Gym.Domain;
 
-namespace BlazorApp.Data
+namespace Gym.Infrastructure
 {
-    public class WeatherForecastService
+    public class WeatherForecastService : IWeatherForecastService
     {
         private static readonly string[] Summaries = new[]
         {
