@@ -54,3 +54,20 @@ Then open the URL shown in the terminal (typically `https://localhost:5001` or a
 ```bash
 dotnet build Gym.sln
 ```
+
+## Payment void authorization
+
+The payment void endpoint demonstrates RBAC together with tenant and branch scoping:
+
+```text
+POST /api/tenants/{tenantId}/branches/{branchId}/payments/{paymentId}/void
+Authorization: Bearer <JWT>
+Content-Type: application/json
+
+{ "reason": "Duplicate payment" }
+```
+
+Only the `TenantAdmin` and `BranchManager` roles satisfy the `CanVoidPayment` policy. The JWT must also
+contain a `tenant_id` claim matching the route. A `BranchManager` needs a matching `branch_id` claim;
+`TenantAdmin` can access every branch within the tenant. Configure `Jwt:Issuer`, `Jwt:Audience`, and
+`Jwt:SigningKey` through environment-specific configuration or environment variables before deployment.
