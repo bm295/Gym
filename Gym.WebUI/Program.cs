@@ -10,10 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<IWeatherForecastService, WeatherForecastService>();
-builder.Services.AddSingleton<ITodoItemService, TodoItemService>();
-builder.Services.AddSingleton<ThreadSafeCounterDemo>();
-builder.Services.AddHttpClient<IExternalApiService, ExternalApiService>();
 builder.Services.AddSingleton<IPaymentService, PaymentService>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");

@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Build and test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: preview
+
+      - name: Restore dependencies
+        run: dotnet restore Gym.sln
+
+      - name: Build
+        run: dotnet build Gym.sln --no-restore --configuration Release
+
+      - name: Run tests with coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mapfile -t test_projects < <(find . -type f \( -name '*Tests.csproj' -o -name '*.Tests.csproj' \) -print)
+
+          if [ "${#test_projects[@]}" -eq 0 ]; then
+            echo 'No test projects found. Add a *Tests.csproj project before merging.'
+            exit 1
+          fi
+
+          mkdir -p coverage
+          for project in "${test_projects[@]}"; do
+            echo "Testing ${project}"
+            dotnet test "${project}" \
+              --no-restore \
+              --configuration Release \
+              --logger "trx;LogFileName=test-results.trx" \
+              --collect:"XPlat Code Coverage" \
+              --results-directory ./coverage
+          done
+
+      - name: Show code coverage
+        if: always()
+        shell: bash
+        run: |
+          shopt -s globstar nullglob
+          reports=(coverage/**/coverage.cobertura.xml)
+
+          if [ "${#reports[@]}" -eq 0 ]; then
+            echo 'No Cobertura coverage report was generated.'
+            exit 0
+          fi
+
+          for report in "${reports[@]}"; do
+            echo "Coverage report: ${report}"
+            python3 - "${report}" <<'PY'
+          import sys
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse(sys.argv[1]).getroot()
+          rate = float(root.attrib.get("line-rate", 0)) * 100
+          print(f"Line coverage: {rate:.2f}%")
+          PY
+          done
+
+      - name: Upload test and coverage artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-and-coverage-results
+          path: coverage
+          if-no-files-found: ignore
