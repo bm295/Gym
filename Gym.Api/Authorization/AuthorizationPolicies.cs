@@ -1,4 +1,4 @@
-namespace Gym.WebUI.Authorization;
+namespace Gym.Api.Authorization;
 
 public static class AuthorizationPolicies
 {

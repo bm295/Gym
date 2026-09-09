@@ -8,7 +8,7 @@ public sealed class PaymentService : IPaymentService
     private readonly object _gate = new();
     private readonly List<Payment> _payments = [];
 
-    public VoidPaymentResult Void(string tenantId, string branchId, Guid paymentId, string reason)
+    public VoidPaymentResult Void(Guid tenantId, Guid branchId, Guid paymentId, string reason)
     {
         lock (_gate)
         {

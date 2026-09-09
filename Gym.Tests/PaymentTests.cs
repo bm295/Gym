@@ -10,8 +10,8 @@ public sealed class PaymentTests
         var payment = new Payment
         {
             Id = Guid.NewGuid(),
-            TenantId = "tenant-1",
-            BranchId = "branch-1"
+            TenantId = Guid.NewGuid(),
+            BranchId = Guid.NewGuid()
         };
 
         var voided = payment.Void("Duplicate payment");
@@ -27,8 +27,8 @@ public sealed class PaymentTests
         var payment = new Payment
         {
             Id = Guid.NewGuid(),
-            TenantId = "tenant-1",
-            BranchId = "branch-1"
+            TenantId = Guid.NewGuid(),
+            BranchId = Guid.NewGuid()
         };
 
         payment.Void("Original reason");

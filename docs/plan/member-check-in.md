@@ -11,7 +11,7 @@ before the next scenario is started.
 ### 1. Test and domain foundation
 
 - [x] Create a dedicated `Gym.Tests` project and add it to `Gym.sln`.
-- [ ] Add domain models for members, branches, subscriptions, plans, and check-ins.
+- [x] Add domain models for members, branches, subscriptions, plans, and check-ins.
 - [ ] Add member/subscription status types and an injectable UTC clock.
 - [ ] Add in-memory repositories and seed-data helpers.
 - [ ] Verify the solution builds and the test project runs.

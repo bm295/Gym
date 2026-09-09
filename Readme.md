@@ -8,7 +8,7 @@ Gym management application for members, subscriptions, payments, branches, and a
 
 ## Run locally
 
-From the repository root:
+From the repository root, run the UI and API hosts separately:
 
 ```bash
 cd Gym.WebUI
@@ -16,7 +16,13 @@ dotnet restore
 dotnet run
 ```
 
-Then open the URL shown in the terminal.
+```bash
+cd Gym.Api
+dotnet restore
+dotnet run
+```
+
+Each host listens on the URL shown by its process.
 
 ## Build
 
@@ -45,4 +51,4 @@ Content-Type: application/json
 Only the `TenantAdmin` and `BranchManager` roles satisfy the `CanVoidPayment` policy. The JWT must also
 contain a `tenant_id` claim matching the route. A `BranchManager` needs a matching `branch_id` claim;
 `TenantAdmin` can access every branch within the tenant. Configure `Jwt:Issuer`, `Jwt:Audience`, and
-`Jwt:SigningKey` through environment-specific configuration or environment variables before deployment.
+`Jwt:SigningKey` for `Gym.Api` through environment-specific configuration or environment variables before deployment.

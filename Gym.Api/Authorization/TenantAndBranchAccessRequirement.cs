@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 
-namespace Gym.WebUI.Authorization;
+namespace Gym.Api.Authorization;
 
 public sealed class TenantAndBranchAccessRequirement : IAuthorizationRequirement;
 
@@ -19,16 +19,15 @@ public sealed class TenantAndBranchAccessHandler
             return Task.CompletedTask;
         }
 
-        var routeTenantId = httpContext.Request.RouteValues["tenantId"]?.ToString();
-        var routeBranchId = httpContext.Request.RouteValues["branchId"]?.ToString();
-        if (routeTenantId is null || routeBranchId is null)
+        if (!Guid.TryParse(httpContext.Request.RouteValues["tenantId"]?.ToString(), out var tenantId)
+            || !Guid.TryParse(httpContext.Request.RouteValues["branchId"]?.ToString(), out var branchId))
         {
             return Task.CompletedTask;
         }
 
-        var canAccessTenant = context.User.HasClaim(TenantClaimType, routeTenantId);
+        var canAccessTenant = HasIdClaim(context, TenantClaimType, tenantId);
         var canAccessBranch = context.User.IsInRole(StaffRoles.TenantAdmin)
-            || context.User.HasClaim(BranchClaimType, routeBranchId);
+            || HasIdClaim(context, BranchClaimType, branchId);
 
         if (canAccessTenant && canAccessBranch)
         {
@@ -37,4 +36,10 @@ public sealed class TenantAndBranchAccessHandler
 
         return Task.CompletedTask;
     }
+
+    private static bool HasIdClaim(AuthorizationHandlerContext context, string claimType, Guid id) =>
+        context.User.Claims.Any(claim =>
+            claim.Type == claimType
+            && Guid.TryParse(claim.Value, out var claimId)
+            && claimId == id);
 }
