@@ -13,6 +13,6 @@ public sealed class Member : SoftDeletableEntity
     public string? Email { get; init; }
     public string? Address { get; init; }
     public Guid? HomeBranchId { get; init; }
-    public required string Status { get; init; }
+    public required MemberStatus Status { get; init; }
     public string? Note { get; init; }
 }

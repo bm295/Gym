@@ -7,7 +7,7 @@ public sealed class Subscription : AuditableEntity
     public required Guid MemberId { get; init; }
     public required Guid MemberPlanId { get; init; }
     public required Guid HomeBranchId { get; init; }
-    public required string Status { get; init; }
+    public required SubscriptionStatus Status { get; init; }
     public required DateOnly StartDate { get; init; }
     public required DateOnly EndDate { get; init; }
     public required decimal SalePrice { get; init; }
