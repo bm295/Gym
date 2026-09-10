@@ -1,6 +1,8 @@
 using Gym.Api.Authorization;
 using Gym.Application;
+using Gym.Application.Repositories;
 using Gym.Infrastructure;
+using Gym.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
@@ -11,6 +13,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddSingleton<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<IUtcClock, UtcClock>();
+builder.Services.AddSingleton<InMemoryGymDataStore>();
+builder.Services.AddSingleton<IBranchRepository, InMemoryBranchRepository>();
+builder.Services.AddSingleton<IMemberRepository, InMemoryMemberRepository>();
+builder.Services.AddSingleton<ISubscriptionRepository, InMemorySubscriptionRepository>();
+builder.Services.AddSingleton<ICheckInRepository, InMemoryCheckInRepository>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var signingKey = jwtSection["SigningKey"]

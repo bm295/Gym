@@ -6,4 +6,8 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Gym.Application\Gym.Application.csproj" />
+  </ItemGroup>
+
 </Project>
