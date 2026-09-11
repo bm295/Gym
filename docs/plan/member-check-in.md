@@ -31,10 +31,10 @@ Do not mark a scenario complete until all of these are done:
 
 Deliver the first complete receptionist flow.
 
-- [ ] Implement `CheckInService` lookup by member code or normalized phone number.
-- [ ] Validate tenant, active member, active subscription, current date, home branch,
+- [x] Implement `CheckInService` lookup by member code or normalized phone number.
+- [x] Validate tenant, active member, active subscription, current date, home branch,
   and no recent duplicate check-in.
-- [ ] Create one check-in record with a UTC timestamp without changing an unlimited
+- [x] Create one check-in record with a UTC timestamp without changing an unlimited
   subscription's visit count; log the successful operation.
 - [ ] Expose `POST /api/tenants/{tenantId}/branches/{branchId}/check-ins`, secured
   with the existing tenant/branch authorization rules.

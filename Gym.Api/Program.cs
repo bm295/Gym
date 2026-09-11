@@ -18,6 +18,8 @@ builder.Services.AddSingleton<IBranchRepository, InMemoryBranchRepository>();
 builder.Services.AddSingleton<IMemberRepository, InMemoryMemberRepository>();
 builder.Services.AddSingleton<ISubscriptionRepository, InMemorySubscriptionRepository>();
 builder.Services.AddSingleton<ICheckInRepository, InMemoryCheckInRepository>();
+builder.Services.AddSingleton<ICheckInOperationLogger, TraceCheckInOperationLogger>();
+builder.Services.AddSingleton<ICheckInService, CheckInService>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var signingKey = jwtSection["SigningKey"]
