@@ -1,0 +1,9 @@
+@page "/prototype/attendance"
+@using Gym.WebUI.Services.Prototype
+@inject IPrototypeGymState State
+
+<PageTitle>Attendance · GymOS</PageTitle>
+<UiPageHeader Eyebrow="Front desk" Title="Attendance history" Description="Review prototype check-ins by date, branch, or member." />
+<UiSearchFilterBar SearchText="@search" SearchTextChanged="value => search = value" Placeholder="Search member"><Filters><select class="form-control" @bind="branchId"><option value="">All branches</option>@foreach (var branch in State.Branches) { <option value="@branch.Id">@branch.Name</option> }</select><input class="form-control" type="date" @bind="date" /></Filters></UiSearchFilterBar>
+@if (!CheckIns.Any()) { <UiEmptyState Title="No check-ins found" Description="Change the filters to see other attendance records." /> } else { <UiDataTable Label="Attendance history"><thead><tr><th>Member</th><th>Branch</th><th>Checked in at</th><th>Subscription</th></tr></thead><tbody>@foreach (var item in CheckIns) { <tr><td>@State.Members.Single(member => member.Id == item.MemberId).FullName</td><td>@State.Branches.Single(branch => branch.Id == item.BranchId).Name</td><td>@item.CheckedInAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td><td>@State.Subscriptions.Single(subscription => subscription.Id == item.SubscriptionId).PlanName</td></tr> }</tbody></UiDataTable> }
+@code { private string search = string.Empty, branchId = string.Empty; private DateOnly? date; private IEnumerable<PrototypeCheckIn> CheckIns => State.CheckIns.Where(item => (string.IsNullOrWhiteSpace(search) || State.Members.Single(member => member.Id == item.MemberId).FullName.Contains(search, StringComparison.OrdinalIgnoreCase)) && (string.IsNullOrWhiteSpace(branchId) || item.BranchId == Guid.Parse(branchId)) && (!date.HasValue || DateOnly.FromDateTime(item.CheckedInAt.LocalDateTime) == date)).OrderByDescending(item => item.CheckedInAt); }

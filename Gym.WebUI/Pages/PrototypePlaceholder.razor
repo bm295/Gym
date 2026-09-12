@@ -1,0 +1,21 @@
+@page "/prototype/{Module}"
+
+<PageTitle>@Title · GymOS</PageTitle>
+
+<UiPageHeader Eyebrow="GymOS prototype" Title="@Title" Description="This operational module is being prepared for the UI prototype.">
+    <Actions><UiStatusBadge Tone="UiTone.Info">Coming soon</UiStatusBadge></Actions>
+</UiPageHeader>
+
+<UiCard>
+    <UiEmptyState Icon="◌" Title="Module under construction" Description="Navigation, visual language, and the app shell are ready. This workspace will be populated in the next delivery task." />
+</UiCard>
+
+@code {
+    [Parameter] public string Module { get; set; } = string.Empty;
+    private string Title => Module.ToLowerInvariant() switch
+    {
+        "members" => "Members", "plans" => "Membership plans", "subscriptions" => "Subscriptions",
+        "attendance" => "Attendance history", "payments" => "Payments", "branches" => "Branches",
+        "staff" => "Staff", "reports" => "Reports", "audit-log" => "Audit log", _ => "Gym operations"
+    };
+}

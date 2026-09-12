@@ -1,22 +1,36 @@
 @if (IsOpen)
 {
     <div class="ui-overlay" role="presentation" @onclick="CloseAsync">
-        <aside class="ui-drawer" role="dialog" aria-modal="true" aria-labelledby="@TitleId" @onclick:stopPropagation>
+        <aside @ref="Drawer" class="ui-drawer" role="dialog" aria-modal="true" aria-labelledby="@TitleId" aria-describedby="@DescriptionId" tabindex="-1" @onclick:stopPropagation @onkeydown="HandleKeyDown">
             <header>
                 <h2 id="@TitleId">@Title</h2>
                 <button class="ui-icon-button" aria-label="Close" @onclick="CloseAsync">×</button>
             </header>
-            <div class="ui-drawer__body">@ChildContent</div>
+            <div id="@DescriptionId" class="ui-drawer__body">@ChildContent</div>
         </aside>
     </div>
 }
 
 @code {
     private readonly string TitleId = $"drawer-{Guid.NewGuid():N}";
+    private readonly string DescriptionId = $"drawer-description-{Guid.NewGuid():N}";
+    private ElementReference Drawer;
+    private bool WasOpen;
     [Parameter] public bool IsOpen { get; set; }
     [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public EventCallback OnClose { get; set; }
 
     private Task CloseAsync() => OnClose.InvokeAsync();
+    private Task HandleKeyDown(KeyboardEventArgs args) => args.Key == "Escape" ? CloseAsync() : Task.CompletedTask;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsOpen && !WasOpen)
+        {
+            await Drawer.FocusAsync();
+        }
+
+        WasOpen = IsOpen;
+    }
 }

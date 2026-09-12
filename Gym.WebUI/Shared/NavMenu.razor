@@ -1,32 +1,54 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
-    <a class="navbar-brand" href="">Gym.WebUI</a>
-    <button class="navbar-toggler" @onclick="ToggleNavMenu">
-        <span class="navbar-toggler-icon"></span>
+@implements IDisposable
+
+<div class="app-sidebar__brand">
+    <NavLink href="" Match="NavLinkMatch.All" class="app-brand" @onclick="CloseNavMenu">
+        <span class="app-brand__mark" aria-hidden="true">G</span>
+        <span><strong>GymOS</strong><small>Operations</small></span>
+    </NavLink>
+    <button class="app-sidebar__toggle" type="button" aria-label="Toggle navigation" aria-expanded="@(!collapseNavMenu)" @onclick="ToggleNavMenu">
+        <span class="oi oi-menu" aria-hidden="true"></span>
     </button>
 </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
-    <ul class="nav flex-column">
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="check-in">
-                <span class="oi oi-account-login" aria-hidden="true"></span> Check-in
-            </NavLink>
-        </li>
-    </ul>
-</div>
+<nav class="app-navigation @NavMenuCssClass" aria-label="Gym operations">
+    <div class="app-navigation__group">
+        <p>@L["Nav.Overview"]</p>
+        <NavLink class="app-nav-link" href="" Match="NavLinkMatch.All" title="@L["Nav.Dashboard"]" aria-label="@L["Nav.Dashboard"]" @onclick="CloseNavMenu"><span class="oi oi-dashboard" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.Dashboard"]</span></NavLink>
+    </div>
+    <div class="app-navigation__group">
+        <p>@L["Nav.Members"]</p>
+        <NavLink class="app-nav-link" href="prototype/members" title="@L["Nav.Members"]" aria-label="@L["Nav.Members"]" @onclick="CloseNavMenu"><span class="oi oi-people" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.Members"]</span></NavLink>
+    </div>
+    <div class="app-navigation__group">
+        <p>@L["Nav.PlansSubscriptions"]</p>
+        <NavLink class="app-nav-link" href="prototype/plans" title="@L["Nav.MembershipPlans"]" aria-label="@L["Nav.MembershipPlans"]" @onclick="CloseNavMenu"><span class="oi oi-list-rich" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.MembershipPlans"]</span></NavLink>
+        <NavLink class="app-nav-link" href="prototype/subscriptions" title="@L["Nav.Subscriptions"]" aria-label="@L["Nav.Subscriptions"]" @onclick="CloseNavMenu"><span class="oi oi-loop-circular" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.Subscriptions"]</span></NavLink>
+    </div>
+    <div class="app-navigation__group">
+        <p>@L["Nav.FrontDesk"]</p>
+        <NavLink class="app-nav-link" href="check-in" title="@L["Nav.CheckIn"]" aria-label="@L["Nav.CheckIn"]" @onclick="CloseNavMenu"><span class="oi oi-account-login" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.CheckIn"]</span></NavLink>
+        <NavLink class="app-nav-link" href="prototype/attendance" title="@L["Nav.Attendance"]" aria-label="@L["Nav.Attendance"]" @onclick="CloseNavMenu"><span class="oi oi-calendar" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.Attendance"]</span></NavLink>
+    </div>
+    <div class="app-navigation__group">
+        <p>@L["Nav.Finance"]</p>
+        <NavLink class="app-nav-link" href="prototype/payments" title="@L["Nav.Payments"]" aria-label="@L["Nav.Payments"]" @onclick="CloseNavMenu"><span class="oi oi-dollar" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.Payments"]</span></NavLink>
+    </div>
+    <div class="app-navigation__group">
+        <p>@L["Nav.Administration"]</p>
+        <NavLink class="app-nav-link" href="prototype/branches" title="@L["Nav.Branches"]" aria-label="@L["Nav.Branches"]" @onclick="CloseNavMenu"><span class="oi oi-map-marker" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.Branches"]</span></NavLink>
+        <NavLink class="app-nav-link" href="prototype/staff" title="@L["Nav.Staff"]" aria-label="@L["Nav.Staff"]" @onclick="CloseNavMenu"><span class="oi oi-person" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.Staff"]</span></NavLink>
+        <NavLink class="app-nav-link" href="prototype/reports" title="@L["Nav.Reports"]" aria-label="@L["Nav.Reports"]" @onclick="CloseNavMenu"><span class="oi oi-bar-chart" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.Reports"]</span></NavLink>
+        <NavLink class="app-nav-link" href="prototype/audit-log" title="@L["Nav.AuditLog"]" aria-label="@L["Nav.AuditLog"]" @onclick="CloseNavMenu"><span class="oi oi-clipboard" aria-hidden="true"></span><span class="app-nav-link__label">@L["Nav.AuditLog"]</span></NavLink>
+    </div>
+</nav>
 
 @code {
     private bool collapseNavMenu = true;
-
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
-
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+    private string NavMenuCssClass => collapseNavMenu ? "app-navigation--collapsed" : string.Empty;
+    private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+    private void CloseNavMenu() => collapseNavMenu = true;
+    protected override void OnInitialized() => L.Changed += Refresh;
+    public void Dispose() => L.Changed -= Refresh;
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
 }
+@inject Gym.WebUI.Services.Ui.IUiLocalizer L

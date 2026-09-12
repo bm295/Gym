@@ -1,0 +1,15 @@
+@page "/prototype/plans/{PlanId:guid}"
+@using Gym.WebUI.Services.Prototype
+@implements IDisposable
+@inject IPrototypeGymState State
+
+@if (Plan is null) { <UiEmptyState Title="Plan not found" Description="This prototype plan does not exist." /> }
+else
+{
+    <PageTitle>@Plan.Name · GymOS</PageTitle>
+    <UiPageHeader Eyebrow="Membership plan" Title="@Plan.Name" Description="@Plan.Code"><Actions><UiStatusBadge Tone="@(Plan.Status == "Active" ? UiTone.Success : UiTone.Neutral)">@Plan.Status</UiStatusBadge>@if (Plan.Status == "Active") { <UiButton Variant="danger" OnClick="() => confirmArchive = true">Archive plan</UiButton> }</Actions></UiPageHeader>
+    <UiCard Title="Plan policy"><dl class="detail-list"><dt>Duration</dt><dd>@Plan.DurationDays days</dd><dt>Price</dt><dd>@Plan.Price.ToString("N0") VND</dd><dt>Visit limit</dt><dd>@(Plan.VisitLimit?.ToString() ?? "Unlimited")</dd><dt>Cross-branch</dt><dd>@(Plan.AllowCrossBranch ? "Allowed" : "Home branch only")</dd><dt>Status</dt><dd>@Plan.Status</dd></dl></UiCard>
+    <UiCard Title="Subscriptions using this plan"><UiDataTable Label="Plan subscriptions"><thead><tr><th>Member</th><th>Snapshot</th><th>Valid through</th><th>Status</th></tr></thead><tbody>@foreach (var subscription in State.Subscriptions.Where(item => item.PlanId == Plan.Id)) { <tr><td>@State.Members.Single(member => member.Id == subscription.MemberId).FullName</td><td>@subscription.PlanName</td><td>@subscription.EndDate</td><td>@subscription.Status</td></tr> }</tbody></UiDataTable></UiCard>
+    <UiConfirmationModal IsOpen="@confirmArchive" Title="Archive this plan?" ConfirmText="Archive plan" OnConfirm="Archive" OnCancel="() => confirmArchive = false"><p>Existing subscriptions retain their snapshot. New prototype sales will no longer offer this plan.</p></UiConfirmationModal>
+}
+@code { [Parameter] public Guid PlanId { get; set; } private bool confirmArchive; private PrototypePlan? Plan => State.Plans.SingleOrDefault(plan => plan.Id == PlanId); protected override void OnInitialized() => State.Changed += Refresh; public void Dispose() => State.Changed -= Refresh; private void Refresh() => _ = InvokeAsync(StateHasChanged); private void Archive() { State.ArchivePlan(PlanId); confirmArchive = false; } }

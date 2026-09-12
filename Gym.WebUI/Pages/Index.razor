@@ -1,4 +1,27 @@
 @page "/"
-<h1>Gym SaaS</h1>
+@using Gym.WebUI.Services.Prototype
+@inject IPrototypeGymState State
+@inject Gym.WebUI.Services.Ui.IAppShellState Shell
+@inject NavigationManager Navigation
 
-<p>Manage members, subscriptions, payments, branches, and attendance.</p>
+<PageTitle>Dashboard · GymOS</PageTitle>
+<UiPageHeader Eyebrow="Operations overview" Title="Dashboard" Description="@DashboardDescription">
+    <Actions><UiButton OnClick="GoToCheckIn">Check in member</UiButton></Actions>
+</UiPageHeader>
+
+<div class="dashboard-metrics">
+    <UiCard Class="dashboard-metric"><span class="dashboard-metric__label">Active members</span><strong>@State.Members.Count(member => member.Status == "Active" && member.HomeBranchId == Shell.SelectedBranch.Id)</strong><small>Selected branch</small></UiCard>
+    <UiCard Class="dashboard-metric"><span class="dashboard-metric__label">Check-ins today</span><strong>@State.CheckIns.Count(item => item.BranchId == Shell.SelectedBranch.Id && item.CheckedInAt.Date == DateTimeOffset.UtcNow.Date)</strong><small>Selected branch</small></UiCard>
+    <UiCard Class="dashboard-metric"><span class="dashboard-metric__label">Revenue today</span><strong>@State.Payments.Where(item => !item.IsVoided && item.PaidAt.Date == DateTimeOffset.UtcNow.Date).Sum(item => item.Amount).ToString("N0") VND</strong><small>Completed payments</small></UiCard>
+    <UiCard Class="dashboard-metric"><span class="dashboard-metric__label">Expiring soon</span><strong>@State.Subscriptions.Count(item => item.Status == "Active" && item.EndDate <= DateOnly.FromDateTime(DateTime.Today).AddDays(7))</strong><small>Within 7 days</small></UiCard>
+</div>
+
+<div class="dashboard-grid">
+    <UiCard Title="Front desk shortcuts" Description="Common actions for this branch."><div class="dashboard-actions"><a class="ui-button ui-button--primary" href="check-in">Check in member</a><a class="ui-button ui-button--secondary" href="prototype/members">Find member</a><a class="ui-button ui-button--secondary" href="prototype/subscriptions">Sell a plan</a></div></UiCard>
+    <UiCard Title="Recent check-ins"><UiDataTable Label="Recent check-ins"><thead><tr><th>Member</th><th>Time</th></tr></thead><tbody>@foreach (var item in State.CheckIns.Where(item => item.BranchId == Shell.SelectedBranch.Id).OrderByDescending(item => item.CheckedInAt).Take(5)) { <tr><td>@State.Members.Single(member => member.Id == item.MemberId).FullName</td><td>@item.CheckedInAt.ToLocalTime().ToString("HH:mm")</td></tr> }</tbody></UiDataTable></UiCard>
+</div>
+
+@code {
+    private string DashboardDescription => $"Prototype summary for {Shell.SelectedBranch.Name}.";
+    private void GoToCheckIn() => Navigation.NavigateTo("check-in");
+}

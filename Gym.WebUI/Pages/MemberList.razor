@@ -1,0 +1,49 @@
+@page "/prototype/members"
+@using Gym.WebUI.Services.Prototype
+@implements IDisposable
+@inject IPrototypeGymState State
+
+<PageTitle>Members · GymOS</PageTitle>
+<UiPageHeader Eyebrow="Member management" Title="Members" Description="Find, filter, and manage member records in the prototype.">
+    <Actions><a class="ui-button ui-button--primary" href="prototype/members/new">Create member</a></Actions>
+</UiPageHeader>
+
+<UiSearchFilterBar SearchText="@search" SearchTextChanged="SearchChanged" Placeholder="Search by code, name, or phone">
+    <Filters>
+        <label class="sr-only" for="member-status-filter">Status</label><select id="member-status-filter" class="form-control" @bind="status"><option value="">All statuses</option><option>Active</option><option>Suspended</option></select>
+        <label class="sr-only" for="member-branch-filter">Branch</label><select id="member-branch-filter" class="form-control" @bind="branchId"><option value="">All branches</option>@foreach (var branch in State.Branches) { <option value="@branch.Id">@branch.Code · @branch.Name</option> }</select>
+    </Filters>
+</UiSearchFilterBar>
+
+@if (!FilteredMembers.Any())
+{
+    <UiEmptyState Icon="⌕" Title="No members found" Description="Try another search term or clear the active filters." />
+}
+else
+{
+    <UiDataTable Label="Members" Caption="Member directory">
+        <thead><tr><th><button class="table-sort" @onclick="ToggleSort">Member @SortMarker</button></th><th>Phone</th><th>Branch</th><th>Status</th><th>Joined</th></tr></thead>
+        <tbody>@foreach (var member in PagedMembers) { var branch = State.Branches.Single(item => item.Id == member.HomeBranchId); <tr><td><a href="prototype/members/@member.Id">@member.FullName</a><br /><small>@member.MemberCode</small></td><td>@member.PhoneNumber</td><td>@branch.Name</td><td><UiStatusBadge Tone="@(member.Status == "Active" ? UiTone.Success : UiTone.Warning)">@member.Status</UiStatusBadge></td><td>@member.JoinedOn.ToString("dd MMM yyyy")</td></tr> }</tbody>
+    </UiDataTable>
+    <div class="list-pagination"><span>Showing @((Page - 1) * PageSize + 1)–@Math.Min(Page * PageSize, FilteredMembers.Count()) of @FilteredMembers.Count()</span><UiButton Variant="secondary" Disabled="@(Page == 1)" OnClick="PreviousPage">Previous</UiButton><UiButton Variant="secondary" Disabled="@(Page * PageSize >= FilteredMembers.Count())" OnClick="NextPage">Next</UiButton></div>
+}
+
+@code {
+    private const int PageSize = 10;
+    private string search = string.Empty, status = string.Empty, branchId = string.Empty;
+    private bool ascending = true;
+    private int Page { get; set; } = 1;
+    private string SortMarker => ascending ? "↑" : "↓";
+    private IEnumerable<PrototypeMember> FilteredMembers => (ascending ? State.Members.OrderBy(member => member.FullName) : State.Members.OrderByDescending(member => member.FullName)).Where(member =>
+        (string.IsNullOrWhiteSpace(search) || member.FullName.Contains(search, StringComparison.OrdinalIgnoreCase) || member.MemberCode.Contains(search, StringComparison.OrdinalIgnoreCase) || member.PhoneNumber.Contains(search, StringComparison.Ordinal)) &&
+        (string.IsNullOrWhiteSpace(status) || member.Status == status) &&
+        (string.IsNullOrWhiteSpace(branchId) || member.HomeBranchId == Guid.Parse(branchId)));
+    private IEnumerable<PrototypeMember> PagedMembers => FilteredMembers.Skip((Page - 1) * PageSize).Take(PageSize);
+    protected override void OnInitialized() => State.Changed += Refresh;
+    public void Dispose() => State.Changed -= Refresh;
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+    private Task SearchChanged(string value) { search = value; Page = 1; return Task.CompletedTask; }
+    private void ToggleSort() { ascending = !ascending; Page = 1; }
+    private void PreviousPage() => Page--;
+    private void NextPage() => Page++;
+}

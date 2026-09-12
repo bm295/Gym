@@ -1,0 +1,133 @@
+@using Gym.WebUI.Services.Ui
+@implements IDisposable
+@inject IAppShellState Shell
+@inject IUiLocalizer L
+@inject IJSRuntime Js
+
+<header class="app-topbar">
+    <a class="app-topbar__skip-link" href="#main-content">Skip to main content</a>
+
+    <div class="app-topbar__left">
+        <label class="sr-only" for="branch-context">@L["TopBar.Branch"]</label>
+        <select id="branch-context" class="app-topbar__branch" value="@Shell.SelectedBranch.Id" @onchange="SelectBranch">
+            @foreach (var branch in Shell.Branches)
+            {
+                <option value="@branch.Id">@branch.Code · @branch.Name</option>
+            }
+        </select>
+        <button class="app-topbar__quick-search" type="button" @onclick="OpenSearch">
+            <span class="oi oi-magnifying-glass" aria-hidden="true"></span>
+            <span>@L["TopBar.Search"]</span>
+            <kbd aria-hidden="true">/</kbd>
+        </button>
+    </div>
+
+    <div class="app-topbar__actions">
+        <details class="app-topbar__menu">
+            <summary aria-label="@L["TopBar.Notifications"]">
+                <span class="oi oi-bell" aria-hidden="true"></span>
+                <span class="app-topbar__notification-count">@Shell.Notifications.Count(notification => notification.IsUnread)</span>
+            </summary>
+            <div class="app-topbar__popover app-topbar__popover--notifications">
+                <strong>@L["TopBar.Notifications"]</strong>
+                @foreach (var notification in Shell.Notifications)
+                {
+                    <div class="app-notification @(notification.IsUnread ? "app-notification--unread" : string.Empty)">
+                        <strong>@notification.Title</strong>
+                        <p>@notification.Description</p>
+                    </div>
+                }
+            </div>
+        </details>
+
+        <label class="sr-only" for="language-selector">@L["TopBar.Language"]</label>
+        <select id="language-selector" class="app-topbar__language" value="@L.Language" @onchange="SelectLanguageAsync">
+            <option value="vi">VI</option>
+            <option value="en">EN</option>
+        </select>
+
+        <details class="app-topbar__menu">
+            <summary class="app-profile-summary">
+                <span class="app-profile-summary__avatar" aria-hidden="true">@Shell.CurrentStaff.Initials</span>
+                <span class="app-profile-summary__name">@Shell.CurrentStaff.Name</span>
+            </summary>
+            <div class="app-topbar__popover app-topbar__popover--profile">
+                <strong>@Shell.CurrentStaff.Name</strong>
+                <p>@L["Role.Receptionist"] · @Shell.SelectedBranch.Name</p>
+                <button type="button" class="app-profile-menu-item">@L["Action.ProfileSettings"]</button>
+                <button type="button" class="app-profile-menu-item">@L["Action.SignOut"]</button>
+            </div>
+        </details>
+    </div>
+</header>
+
+<UiDrawer IsOpen="@isSearchOpen" Title="@L["TopBar.QuickSearch"]" OnClose="CloseSearch">
+    <div class="app-quick-search">
+        <label for="global-search">Find a member, subscription, or payment</label>
+        <input id="global-search" class="form-control" placeholder="Try member code, name, or phone number" @bind="searchTerm" autofocus />
+        @if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            <p>@L["Help.StartTyping"]</p>
+        }
+        else
+        {
+            <UiEmptyState Icon="⌕" Title="@L["Message.NoResults"]" Description="Global search results will be connected to the UI prototype data in a later task." />
+        }
+    </div>
+</UiDrawer>
+
+@code {
+    private bool isSearchOpen;
+    private string searchTerm = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        Shell.Changed += HandleStateChanged;
+        L.Changed += HandleStateChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        var language = await Js.InvokeAsync<string?>("sessionStorage.getItem", "gymos.language");
+        if (language is "vi" or "en")
+        {
+            L.SetLanguage(language);
+        }
+
+        var branchId = await Js.InvokeAsync<string?>("sessionStorage.getItem", "gymos.branch-id");
+        if (Guid.TryParse(branchId, out var parsedBranchId))
+        {
+            Shell.SelectBranch(parsedBranchId);
+        }
+    }
+
+    public void Dispose()
+    {
+        Shell.Changed -= HandleStateChanged;
+        L.Changed -= HandleStateChanged;
+    }
+
+    private void HandleStateChanged() => _ = InvokeAsync(StateHasChanged);
+    private void OpenSearch() => isSearchOpen = true;
+    private void CloseSearch() => isSearchOpen = false;
+    private async Task SelectBranch(ChangeEventArgs args)
+    {
+        if (Guid.TryParse(args.Value?.ToString(), out var branchId))
+        {
+            Shell.SelectBranch(branchId);
+            await Js.InvokeVoidAsync("sessionStorage.setItem", "gymos.branch-id", branchId.ToString());
+        }
+    }
+
+    private async Task SelectLanguageAsync(ChangeEventArgs args)
+    {
+        var language = args.Value?.ToString() ?? "vi";
+        L.SetLanguage(language);
+        await Js.InvokeVoidAsync("sessionStorage.setItem", "gymos.language", L.Language);
+    }
+}

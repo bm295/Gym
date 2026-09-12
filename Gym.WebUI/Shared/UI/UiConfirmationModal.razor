@@ -1,12 +1,12 @@
 @if (IsOpen)
 {
     <div class="ui-overlay" role="presentation" @onclick="CancelAsync">
-        <section class="ui-modal" role="dialog" aria-modal="true" aria-labelledby="@TitleId" @onclick:stopPropagation>
+        <section @ref="Modal" class="ui-modal" role="dialog" aria-modal="true" aria-labelledby="@TitleId" aria-describedby="@DescriptionId" tabindex="-1" @onclick:stopPropagation @onkeydown="HandleKeyDown">
             <header>
                 <h2 id="@TitleId">@Title</h2>
                 <button class="ui-icon-button" aria-label="Close" @onclick="CancelAsync">×</button>
             </header>
-            <div class="ui-modal__body">@ChildContent</div>
+            <div id="@DescriptionId" class="ui-modal__body">@ChildContent</div>
             <footer>
                 <UiButton Variant="secondary" OnClick="CancelAsync">@CancelText</UiButton>
                 <UiButton Variant="danger" OnClick="ConfirmAsync" Disabled="@IsBusy">@(IsBusy ? "Working…" : ConfirmText)</UiButton>
@@ -17,6 +17,9 @@
 
 @code {
     private readonly string TitleId = $"modal-{Guid.NewGuid():N}";
+    private readonly string DescriptionId = $"modal-description-{Guid.NewGuid():N}";
+    private ElementReference Modal;
+    private bool WasOpen;
     [Parameter] public bool IsOpen { get; set; }
     [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
     [Parameter] public string ConfirmText { get; set; } = "Confirm";
@@ -28,4 +31,15 @@
 
     private Task ConfirmAsync() => OnConfirm.InvokeAsync();
     private Task CancelAsync() => OnCancel.InvokeAsync();
+    private Task HandleKeyDown(KeyboardEventArgs args) => args.Key == "Escape" ? CancelAsync() : Task.CompletedTask;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (IsOpen && !WasOpen)
+        {
+            await Modal.FocusAsync();
+        }
+
+        WasOpen = IsOpen;
+    }
 }

@@ -1,9 +1,16 @@
 <div class="ui-data-table-wrapper" aria-label="@Label">
-    <table class="ui-data-table @Class">@ChildContent</table>
+    <table class="ui-data-table @Class">
+        @if (!string.IsNullOrWhiteSpace(Caption))
+        {
+            <caption>@Caption</caption>
+        }
+        @ChildContent
+    </table>
 </div>
 
 @code {
     [Parameter] public string Label { get; set; } = "Data table";
+    [Parameter] public string? Caption { get; set; }
     [Parameter] public string? Class { get; set; }
     [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
 }

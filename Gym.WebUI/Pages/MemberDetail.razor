@@ -1,0 +1,56 @@
+@page "/prototype/members/new"
+@page "/prototype/members/{MemberId:guid}"
+@using Gym.WebUI.Services.Prototype
+@implements IDisposable
+@inject IPrototypeGymState State
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsCreate ? "Create member" : Member?.FullName) · GymOS</PageTitle>
+
+@if (IsCreate)
+{
+    <UiPageHeader Eyebrow="Member management" Title="Create member" Description="Create a prototype member record for this browser session." />
+    <UiCard Title="Member details"><EditForm Model="draft" OnSubmit="Create"><div class="prototype-form"><label>Full name<input class="form-control" @bind="draft.FullName" /></label><label>Phone number<input class="form-control" @bind="draft.PhoneNumber" /></label><label>Home branch<select class="form-control" @bind="draft.HomeBranchId">@foreach (var branch in State.Branches) { <option value="@branch.Id">@branch.Name</option> }</select></label><UiValidationSummary Messages="@validationMessages" /><div class="dashboard-actions"><UiButton Type="submit">Create member</UiButton><a class="ui-button ui-button--secondary" href="prototype/members">Cancel</a></div></div></EditForm></UiCard>
+}
+else if (Member is null)
+{
+    <UiEmptyState Title="Member not found" Description="The requested prototype member does not exist." />
+}
+else
+{
+    <UiPageHeader Eyebrow="Member profile" Title="@Member.FullName" Description="@MemberDescription"><Actions><UiButton Variant="secondary" OnClick="StartEdit">Edit member</UiButton><UiStatusBadge Tone="@(Member.Status == "Active" ? UiTone.Success : UiTone.Warning)">@Member.Status</UiStatusBadge></Actions></UiPageHeader>
+    <div class="member-detail-grid">
+        <UiCard Title="Profile summary"><dl class="detail-list"><dt>Home branch</dt><dd>@Branch.Name</dd><dt>Joined</dt><dd>@Member.JoinedOn.ToString("dd MMM yyyy")</dd><dt>Current plan</dt><dd>@(CurrentSubscription?.PlanName ?? "No active subscription")</dd><dt>Plan validity</dt><dd>@(CurrentSubscription is null ? "—" : $"{CurrentSubscription.StartDate:dd MMM} – {CurrentSubscription.EndDate:dd MMM yyyy}")</dd><dt>Visits</dt><dd>@(CurrentSubscription?.RemainingVisits?.ToString() ?? "Unlimited")</dd></dl></UiCard>
+        <UiCard Title="Membership actions"><div class="dashboard-actions"><a class="ui-button ui-button--primary" href="prototype/subscriptions">Sell or renew plan</a><UiButton Variant="secondary" OnClick="ToggleLock">@(Member.Status == "Active" ? "Suspend member" : "Activate member")</UiButton></div></UiCard>
+    </div>
+    <UiCard Title="Payments"><UiDataTable Label="Member payments"><thead><tr><th>Payment</th><th>Amount</th><th>Method</th><th>Status</th></tr></thead><tbody>@foreach (var payment in Payments) { <tr><td>@payment.PaymentNo</td><td>@payment.Amount.ToString("N0") VND</td><td>@payment.Method</td><td><UiStatusBadge Tone="@(payment.IsVoided ? UiTone.Danger : UiTone.Success)">@(payment.IsVoided ? "Voided" : "Completed")</UiStatusBadge></td></tr> }</tbody></UiDataTable></UiCard>
+    <UiCard Title="Check-in history"><UiDataTable Label="Member check-ins"><thead><tr><th>Branch</th><th>Checked in at</th></tr></thead><tbody>@foreach (var checkIn in CheckIns) { <tr><td>@State.Branches.Single(branch => branch.Id == checkIn.BranchId).Name</td><td>@checkIn.CheckedInAt.ToLocalTime().ToString("dd MMM yyyy HH:mm")</td></tr> }</tbody></UiDataTable></UiCard>
+    <UiCard Title="Activity timeline"><ol class="activity-timeline">@foreach (var entry in Timeline) { <li><strong>@entry.Action</strong><span>@entry.Summary</span><small>@entry.OccurredAt.ToLocalTime().ToString("g")</small></li> }</ol></UiCard>
+    <UiDrawer IsOpen="@isEditing" Title="Edit member" OnClose="RequestCancelEdit"><EditForm Model="editDraft" OnSubmit="SaveEdit"><div class="prototype-form"><label>Full name<input class="form-control" @bind="editDraft.FullName" /></label><label>Phone number<input class="form-control" @bind="editDraft.PhoneNumber" /></label><label>Home branch<select class="form-control" @bind="editDraft.HomeBranchId">@foreach (var branch in State.Branches) { <option value="@branch.Id">@branch.Name</option> }</select></label><UiValidationSummary Messages="@validationMessages" /><UiButton Type="submit">Save changes</UiButton></div></EditForm></UiDrawer>
+    <UiConfirmationModal IsOpen="@confirmDiscard" Title="Discard unsaved changes?" ConfirmText="Discard changes" OnConfirm="DiscardEdit" OnCancel="() => confirmDiscard = false"><p>Your edits have not been saved in this browser session.</p></UiConfirmationModal>
+}
+
+@code {
+    [Parameter] public Guid MemberId { get; set; }
+    private MemberDraft draft = new(string.Empty, string.Empty, Guid.Parse("11111111-1111-1111-1111-111111111111"));
+    private MemberDraft editDraft = new(string.Empty, string.Empty, Guid.Empty);
+    private List<string> validationMessages = [];
+    private bool isEditing, confirmDiscard;
+    private bool IsCreate => MemberId == Guid.Empty;
+    private PrototypeMember? Member => State.Members.SingleOrDefault(member => member.Id == MemberId);
+    private string MemberDescription => $"{Member!.MemberCode} · {Member.PhoneNumber}";
+    private PrototypeBranch Branch => State.Branches.Single(branch => branch.Id == Member!.HomeBranchId);
+    private PrototypeSubscription? CurrentSubscription => State.Subscriptions.LastOrDefault(item => item.MemberId == MemberId && item.Status == "Active");
+    private IEnumerable<PrototypePayment> Payments => State.Payments.Where(payment => payment.MemberId == MemberId).OrderByDescending(payment => payment.PaidAt);
+    private IEnumerable<PrototypeCheckIn> CheckIns => State.CheckIns.Where(checkIn => checkIn.MemberId == MemberId).OrderByDescending(checkIn => checkIn.CheckedInAt);
+    private IEnumerable<PrototypeAuditEntry> Timeline => State.AuditEntries.Where(entry => Member is not null && entry.Summary.Contains(Member.FullName, StringComparison.OrdinalIgnoreCase));
+    protected override void OnInitialized() => State.Changed += Refresh;
+    public void Dispose() => State.Changed -= Refresh;
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+    private void Create() { validationMessages = []; if (string.IsNullOrWhiteSpace(draft.FullName)) validationMessages.Add("Full name is required."); if (string.IsNullOrWhiteSpace(draft.PhoneNumber)) validationMessages.Add("Phone number is required."); if (validationMessages.Count > 0) return; var member = State.CreateMember(draft); Navigation.NavigateTo($"prototype/members/{member.Id}"); }
+    private void ToggleLock() => State.SetMemberLocked(MemberId, Member!.Status == "Active");
+    private void StartEdit() { editDraft = new(Member!.FullName, Member.PhoneNumber, Member.HomeBranchId); validationMessages = []; isEditing = true; }
+    private void SaveEdit() { validationMessages = []; if (string.IsNullOrWhiteSpace(editDraft.FullName)) validationMessages.Add("Full name is required."); if (string.IsNullOrWhiteSpace(editDraft.PhoneNumber)) validationMessages.Add("Phone number is required."); if (validationMessages.Count == 0 && State.EditMember(MemberId, editDraft)) isEditing = false; }
+    private void RequestCancelEdit() { if (editDraft.FullName != Member!.FullName || editDraft.PhoneNumber != Member.PhoneNumber || editDraft.HomeBranchId != Member.HomeBranchId) confirmDiscard = true; else isEditing = false; }
+    private void DiscardEdit() { confirmDiscard = false; isEditing = false; }
+}

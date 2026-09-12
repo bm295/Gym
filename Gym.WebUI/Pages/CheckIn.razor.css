@@ -9,19 +9,19 @@
 
 .check-in-header h1 {
     margin: .2rem 0 .5rem;
-    color: #152238;
+    color: var(--color-text-primary);
     font-size: 2.2rem;
     font-weight: 700;
 }
 
 .check-in-header p,
 .step-heading p {
-    color: #6b778c;
+    color: var(--color-text-secondary);
     margin: 0;
 }
 
 .eyebrow {
-    color: #13795b;
+    color: var(--color-brand-700);
     font-size: .75rem;
     font-weight: 700;
     letter-spacing: .12em;
@@ -37,15 +37,15 @@
 
 .check-in-card,
 .confirmation-card {
-    border: 1px solid #e4e8ee;
-    border-radius: 12px;
-    background: #fff;
-    box-shadow: 0 8px 24px rgba(21, 34, 56, .06);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface-default);
+    box-shadow: var(--shadow-md);
     padding: 1.75rem;
 }
 
 .confirmation-card {
-    background: #f8fafc;
+    background: var(--color-surface-subtle);
 }
 
 .step-heading {
@@ -55,7 +55,7 @@
 }
 
 .step-heading h2 {
-    color: #223047;
+    color: var(--color-text-primary);
     font-size: 1.15rem;
     font-weight: 700;
     margin: 0 0 .2rem;
@@ -69,31 +69,31 @@
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    background: #e6f4ef;
-    color: #13795b;
+    background: var(--color-brand-100);
+    color: var(--color-brand-700);
     font-weight: 700;
 }
 
 label {
-    color: #36445b;
+    color: var(--color-text-primary);
     font-size: .88rem;
     font-weight: 600;
 }
 
 .optional {
-    color: #8994a7;
+    color: var(--color-text-muted);
     font-size: .75rem;
     font-weight: 400;
 }
 
 .form-control {
-    border-color: #d8dee8;
-    border-radius: 7px;
+    border-color: var(--color-border-strong);
+    border-radius: var(--radius-md);
 }
 
 .form-control:focus {
-    border-color: #24896d;
-    box-shadow: 0 0 0 .2rem rgba(36, 137, 109, .14);
+    border-color: var(--color-brand-600);
+    box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 .confirmation-details {
@@ -102,12 +102,12 @@ label {
     margin-bottom: 1.5rem;
     padding: 1rem;
     border-radius: 8px;
-    background: #fff;
+    background: var(--color-surface-default);
 }
 
 .confirmation-details span {
     margin-top: .55rem;
-    color: #778398;
+    color: var(--color-text-muted);
     font-size: .75rem;
     text-transform: uppercase;
 }
@@ -117,25 +117,25 @@ label {
 }
 
 .confirmation-details strong {
-    color: #25344c;
+    color: var(--color-text-primary);
     overflow-wrap: anywhere;
 }
 
 .empty-confirmation {
     padding: 2.25rem 1rem;
-    color: #7c8799;
+    color: var(--color-text-muted);
     text-align: center;
 }
 
 .empty-confirmation .oi {
     display: block;
     margin-bottom: 1rem;
-    color: #a7b0bf;
+    color: var(--color-border-strong);
     font-size: 2rem;
 }
 
 .success-result {
-    color: #256b55;
+    color: var(--color-success);
     text-align: center;
 }
 
@@ -147,12 +147,12 @@ label {
     height: 3.5rem;
     margin-bottom: 1rem;
     border-radius: 50%;
-    background: #dff4eb;
+    background: var(--color-success-surface);
     font-size: 1.5rem;
 }
 
 .success-result h3 {
-    color: #1f5f4b;
+    color: var(--color-success);
     font-size: 1.3rem;
     font-weight: 700;
 }
@@ -161,18 +161,18 @@ label {
     margin: 1.5rem 0;
     padding: 1rem;
     border-radius: 8px;
-    background: #fff;
+    background: var(--color-surface-default);
     text-align: left;
 }
 
 .success-result dt {
-    color: #778398;
+    color: var(--color-text-muted);
     font-size: .72rem;
     text-transform: uppercase;
 }
 
 .success-result dd {
-    color: #25344c;
+    color: var(--color-text-primary);
     font-size: .85rem;
     overflow-wrap: anywhere;
 }
