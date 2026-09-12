@@ -36,9 +36,9 @@ Deliver the first complete receptionist flow.
   and no recent duplicate check-in.
 - [x] Create one check-in record with a UTC timestamp without changing an unlimited
   subscription's visit count; log the successful operation.
-- [ ] Expose `POST /api/tenants/{tenantId}/branches/{branchId}/check-ins`, secured
+- [x] Expose `POST /api/tenants/{tenantId}/branches/{branchId}/check-ins`, secured
   with the existing tenant/branch authorization rules.
-- [ ] Add the `/check-in` UI: member lookup, selected branch, confirmation, and a
+- [x] Add the `/check-in` UI: member lookup, selected branch, confirmation, and a
   success result.
 - [ ] Add application, API, and UI tests for the successful unlimited-plan flow.
 - [ ] Smoke-test the flow from UI through API to the in-memory store.

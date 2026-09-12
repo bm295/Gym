@@ -1,5 +1,6 @@
 using Gym.Api.Authorization;
 using Gym.Application;
+using Gym.Application.CheckIns;
 using Gym.Application.Repositories;
 using Gym.Infrastructure;
 using Gym.Infrastructure.Repositories;
@@ -42,6 +43,15 @@ builder.Services
     });
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy(AuthorizationPolicies.CanCheckIn, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole(
+            StaffRoles.TenantAdmin,
+            StaffRoles.BranchManager,
+            StaffRoles.Receptionist);
+        policy.AddRequirements(new TenantAndBranchAccessRequirement());
+    });
     options.AddPolicy(AuthorizationPolicies.CanVoidPayment, policy =>
     {
         policy.RequireAuthenticatedUser();
