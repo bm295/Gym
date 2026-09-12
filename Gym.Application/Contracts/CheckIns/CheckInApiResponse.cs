@@ -1,6 +1,6 @@
 using Gym.Application.CheckIns;
 
-namespace Gym.Application.CheckIns.Contracts;
+namespace Gym.Application.Contracts.CheckIns;
 
 public sealed record CheckInApiResponse(
     bool IsSuccess,

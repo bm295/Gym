@@ -2,6 +2,7 @@ using Gym.Api.Authorization;
 using Gym.Application;
 using Gym.Application.CheckIns;
 using Gym.Application.Repositories;
+using Gym.Application.Tenants.Context;
 using Gym.Infrastructure;
 using Gym.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -22,6 +23,7 @@ builder.Services.AddSingleton<ISubscriptionRepository, InMemorySubscriptionRepos
 builder.Services.AddSingleton<ICheckInRepository, InMemoryCheckInRepository>();
 builder.Services.AddSingleton<ICheckInOperationLogger, TraceCheckInOperationLogger>();
 builder.Services.AddSingleton<ICheckInService, CheckInService>();
+builder.Services.AddSingleton<ITenantContextResolver, ClaimsTenantContextResolver>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var signingKey = jwtSection["SigningKey"]

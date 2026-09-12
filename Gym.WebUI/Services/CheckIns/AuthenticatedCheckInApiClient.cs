@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using Gym.Application.CheckIns.Contracts;
+using Gym.Application.Contracts.CheckIns;
 using Gym.WebUI.Services.Authentication;
 
 namespace Gym.WebUI.Services.CheckIns;

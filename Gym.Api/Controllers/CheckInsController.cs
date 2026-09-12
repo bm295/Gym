@@ -1,7 +1,7 @@
 using System.Security.Claims;
 using Gym.Api.Authorization;
 using Gym.Application.CheckIns;
-using Gym.Application.CheckIns.Contracts;
+using Gym.Application.Contracts.CheckIns;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

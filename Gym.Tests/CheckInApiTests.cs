@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
-using Gym.Application.CheckIns.Contracts;
+using Gym.Application.Contracts.CheckIns;
 using Gym.Domain;
 using Gym.Infrastructure.Repositories;
 using Gym.Tests.Support;

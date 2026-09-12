@@ -1,4 +1,4 @@
-using Gym.Application.CheckIns.Contracts;
+using Gym.Application.Contracts.CheckIns;
 
 namespace Gym.WebUI.Services.CheckIns;
 

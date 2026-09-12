@@ -18,11 +18,11 @@ Do not mark a scenario complete until all applicable tasks are done:
 
 ## 1. Shared tenant-context foundation
 
-- [ ] Define a tenant-context application contract containing tenant identity,
+- [x] Define a tenant-context application contract containing tenant identity,
   tenant name, authenticated staff identity, role, and allowed branches.
-- [ ] Define a branch-access model for Tenant Admin, Branch Manager, and
+- [x] Define a branch-access model for Tenant Admin, Branch Manager, and
   Receptionist, including tenant-wide versus explicit branch access.
-- [ ] Add an application service that resolves tenant context from authenticated
+- [x] Add an application service that resolves tenant context from authenticated
   claims without accepting a tenant ID from UI input.
 - [ ] Extend in-memory seed data with two tenants, multiple branches, staff
   roles, branch access assignments, and tenant-scoped operational records.
