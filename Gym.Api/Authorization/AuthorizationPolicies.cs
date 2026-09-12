@@ -3,6 +3,7 @@ namespace Gym.Api.Authorization;
 public static class AuthorizationPolicies
 {
     public const string CanVoidPayment = nameof(CanVoidPayment);
+    public const string CanCheckIn = nameof(CanCheckIn);
 }
 
 public static class StaffRoles
