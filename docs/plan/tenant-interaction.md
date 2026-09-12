@@ -24,9 +24,9 @@ Do not mark a scenario complete until all applicable tasks are done:
   Receptionist, including tenant-wide versus explicit branch access.
 - [x] Add an application service that resolves tenant context from authenticated
   claims without accepting a tenant ID from UI input.
-- [ ] Extend in-memory seed data with two tenants, multiple branches, staff
+- [x] Extend in-memory seed data with two tenants, multiple branches, staff
   roles, branch access assignments, and tenant-scoped operational records.
-- [ ] Add repositories/query methods that require tenant scope for members,
+- [x] Add repositories/query methods that require tenant scope for members,
   plans, subscriptions, payments, check-ins, audit entries, and reports.
 - [ ] Add `GET /api/context` or equivalent authenticated endpoint that returns
   the tenant context and allowed branch list for the current staff user.

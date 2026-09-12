@@ -4,6 +4,8 @@ namespace Gym.Application.Repositories;
 
 public interface ICheckInRepository
 {
+    CheckIn? GetById(Guid tenantId, Guid checkInId);
+    IReadOnlyList<CheckIn> List(Guid tenantId);
     IReadOnlyList<CheckIn> GetByMemberAndBranchSince(
         Guid tenantId,
         Guid memberId,
