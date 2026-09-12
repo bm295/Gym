@@ -1,0 +1,9 @@
+<div class="ui-data-table-wrapper" aria-label="@Label">
+    <table class="ui-data-table @Class">@ChildContent</table>
+</div>
+
+@code {
+    [Parameter] public string Label { get; set; } = "Data table";
+    [Parameter] public string? Class { get; set; }
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}

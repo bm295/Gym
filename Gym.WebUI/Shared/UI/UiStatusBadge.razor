@@ -1,0 +1,6 @@
+<span class="ui-status-badge ui-status-badge--@Tone.ToString().ToLowerInvariant()">@ChildContent</span>
+
+@code {
+    [Parameter] public UiTone Tone { get; set; } = UiTone.Info;
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}

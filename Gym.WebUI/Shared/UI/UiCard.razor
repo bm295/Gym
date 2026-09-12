@@ -1,0 +1,31 @@
+<section class="ui-card @Class" aria-labelledby="@HeadingId">
+    @if (!string.IsNullOrWhiteSpace(Title) || HeaderActions is not null)
+    {
+        <header class="ui-card__header">
+            <div>
+                @if (!string.IsNullOrWhiteSpace(Title))
+                {
+                    <h2 id="@HeadingId">@Title</h2>
+                }
+                @if (!string.IsNullOrWhiteSpace(Description))
+                {
+                    <p>@Description</p>
+                }
+            </div>
+            @if (HeaderActions is not null)
+            {
+                <div>@HeaderActions</div>
+            }
+        </header>
+    }
+    <div class="ui-card__body">@ChildContent</div>
+</section>
+
+@code {
+    private readonly string HeadingId = $"card-{Guid.NewGuid():N}";
+    [Parameter] public string? Title { get; set; }
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? HeaderActions { get; set; }
+    [Parameter, EditorRequired] public RenderFragment? ChildContent { get; set; }
+}

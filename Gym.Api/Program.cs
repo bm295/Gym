@@ -12,6 +12,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
 builder.Services.AddSingleton<IPaymentService, PaymentService>();
 builder.Services.AddSingleton<IUtcClock, UtcClock>();
 builder.Services.AddSingleton<InMemoryGymDataStore>();
@@ -75,3 +76,8 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+namespace Gym.Api
+{
+    public partial class Program;
+}

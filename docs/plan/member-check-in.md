@@ -40,8 +40,8 @@ Deliver the first complete receptionist flow.
   with the existing tenant/branch authorization rules.
 - [x] Add the `/check-in` UI: member lookup, selected branch, confirmation, and a
   success result.
-- [ ] Add application, API, and UI tests for the successful unlimited-plan flow.
-- [ ] Smoke-test the flow from UI through API to the in-memory store.
+- [x] Add application, API, and UI tests for the successful unlimited-plan flow.
+- [x] Smoke-test the flow from UI through API to the in-memory store.
 
 ## 3. Scenario: eligible member with a limited subscription
 

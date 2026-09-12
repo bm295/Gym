@@ -1,0 +1,23 @@
+@implements IDisposable
+@inject Gym.WebUI.Services.Ui.IToastService Toasts
+
+<div class="ui-toast-container" aria-live="polite" aria-atomic="true">
+    @foreach (var toast in Toasts.Messages)
+    {
+        <div class="ui-toast ui-toast--@toast.Tone.ToString().ToLowerInvariant()" role="status">
+            <div>
+                @if (!string.IsNullOrWhiteSpace(toast.Title))
+                {
+                    <strong>@toast.Title</strong>
+                }
+                <p>@toast.Message</p>
+            </div>
+            <button class="ui-icon-button" aria-label="Dismiss notification" @onclick="() => Toasts.Dismiss(toast.Id)">×</button>
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() => Toasts.Changed += StateHasChanged;
+    public void Dispose() => Toasts.Changed -= StateHasChanged;
+}

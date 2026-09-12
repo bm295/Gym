@@ -1,0 +1,31 @@
+@if (IsOpen)
+{
+    <div class="ui-overlay" role="presentation" @onclick="CancelAsync">
+        <section class="ui-modal" role="dialog" aria-modal="true" aria-labelledby="@TitleId" @onclick:stopPropagation>
+            <header>
+                <h2 id="@TitleId">@Title</h2>
+                <button class="ui-icon-button" aria-label="Close" @onclick="CancelAsync">×</button>
+            </header>
+            <div class="ui-modal__body">@ChildContent</div>
+            <footer>
+                <UiButton Variant="secondary" OnClick="CancelAsync">@CancelText</UiButton>
+                <UiButton Variant="danger" OnClick="ConfirmAsync" Disabled="@IsBusy">@(IsBusy ? "Working…" : ConfirmText)</UiButton>
+            </footer>
+        </section>
+    </div>
+}
+
+@code {
+    private readonly string TitleId = $"modal-{Guid.NewGuid():N}";
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string ConfirmText { get; set; } = "Confirm";
+    [Parameter] public string CancelText { get; set; } = "Cancel";
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private Task ConfirmAsync() => OnConfirm.InvokeAsync();
+    private Task CancelAsync() => OnCancel.InvokeAsync();
+}

@@ -1,0 +1,28 @@
+<div class="ui-search-filter-bar">
+    <div class="ui-search-filter-bar__search">
+        <label class="sr-only" for="@InputId">@SearchLabel</label>
+        <input id="@InputId" class="form-control" value="@SearchText" placeholder="@Placeholder"
+               @oninput="HandleSearchInput" />
+    </div>
+    @if (Filters is not null)
+    {
+        <div class="ui-search-filter-bar__filters">@Filters</div>
+    }
+    @if (Actions is not null)
+    {
+        <div class="ui-search-filter-bar__actions">@Actions</div>
+    }
+</div>
+
+@code {
+    private readonly string InputId = $"search-{Guid.NewGuid():N}";
+    [Parameter] public string SearchLabel { get; set; } = "Search";
+    [Parameter] public string Placeholder { get; set; } = "Search";
+    [Parameter] public string SearchText { get; set; } = string.Empty;
+    [Parameter] public EventCallback<string> SearchTextChanged { get; set; }
+    [Parameter] public RenderFragment? Filters { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    private Task HandleSearchInput(ChangeEventArgs args) =>
+        SearchTextChanged.InvokeAsync(args.Value?.ToString() ?? string.Empty);
+}
