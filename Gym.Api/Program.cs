@@ -3,6 +3,7 @@ using Gym.Application;
 using Gym.Application.CheckIns;
 using Gym.Application.Repositories;
 using Gym.Application.Tenants.Context;
+using Gym.Application.Contracts.Tenants;
 using Gym.Infrastructure;
 using Gym.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -45,7 +46,27 @@ builder.Services
             ValidAudience = jwtSection["Audience"],
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)),
-            ValidateLifetime = true
+            ValidateLifetime = true,
+            NameClaimType = TenantClaimTypes.StaffDisplayName,
+            RoleClaimType = TenantClaimTypes.StaffRole
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                try
+                {
+                    context.HttpContext.RequestServices
+                        .GetRequiredService<ITenantContextResolver>()
+                        .Resolve(context.Principal!);
+                }
+                catch (TenantContextResolutionException exception)
+                {
+                    context.Fail(exception.Message);
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 builder.Services.AddAuthorization(options =>

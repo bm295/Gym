@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using Gym.Application.Contracts.CheckIns;
+using Gym.Application.Contracts.Tenants;
 using Gym.Domain;
 using Gym.Infrastructure.Repositories;
 using Gym.Tests.Support;
@@ -94,10 +95,12 @@ internal sealed class TestAuthenticationHandler(
         var branchId = scope[1];
         var identity = new ClaimsIdentity(
         [
-            new Claim(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Role, "Receptionist"),
-            new Claim("tenant_id", tenantId),
-            new Claim("branch_id", branchId)
+            new Claim(TenantClaimTypes.StaffUserId, Guid.NewGuid().ToString()),
+            new Claim(TenantClaimTypes.StaffDisplayName, "Test Receptionist"),
+            new Claim(TenantClaimTypes.StaffRole, nameof(TenantStaffRole.Receptionist)),
+            new Claim(TenantClaimTypes.TenantId, tenantId),
+            new Claim(TenantClaimTypes.TenantName, "Test Gym"),
+            new Claim(TenantClaimTypes.BranchContext, $"{branchId}|TEST-01|Test Branch")
         ], SchemeName);
         return Task.FromResult(AuthenticateResult.Success(
             new AuthenticationTicket(new ClaimsPrincipal(identity), SchemeName)));

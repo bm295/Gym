@@ -1,7 +1,7 @@
-using System.Security.Claims;
 using Gym.Api.Authorization;
 using Gym.Application.CheckIns;
 using Gym.Application.Contracts.CheckIns;
+using Gym.Application.Contracts.Tenants;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,7 +33,7 @@ public sealed class CheckInsController(ICheckInService checkIns) : ControllerBas
 
     private Guid? GetStaffUserId()
     {
-        var value = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+        var value = User.FindFirst(TenantClaimTypes.StaffUserId)?.Value
             ?? User.FindFirst("sub")?.Value;
 
         return Guid.TryParse(value, out var staffUserId) ? staffUserId : null;

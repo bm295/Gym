@@ -1,15 +1,15 @@
+using Gym.Application.Contracts.Tenants;
+using Gym.Application.Tenants.Access;
+using Gym.Application.Tenants.Context;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Gym.Api.Authorization;
 
 public sealed class TenantAndBranchAccessRequirement : IAuthorizationRequirement;
 
-public sealed class TenantAndBranchAccessHandler
+public sealed class TenantAndBranchAccessHandler(ITenantContextResolver tenantContextResolver)
     : AuthorizationHandler<TenantAndBranchAccessRequirement>
 {
-    public const string TenantClaimType = "tenant_id";
-    public const string BranchClaimType = "branch_id";
-
     protected override Task HandleRequirementAsync(
         AuthorizationHandlerContext context,
         TenantAndBranchAccessRequirement requirement)
@@ -25,21 +25,31 @@ public sealed class TenantAndBranchAccessHandler
             return Task.CompletedTask;
         }
 
-        var canAccessTenant = HasIdClaim(context, TenantClaimType, tenantId);
-        var canAccessBranch = context.User.IsInRole(StaffRoles.TenantAdmin)
-            || HasIdClaim(context, BranchClaimType, branchId);
+        TenantContext tenantContext;
+        try
+        {
+            tenantContext = tenantContextResolver.Resolve(context.User);
+        }
+        catch (TenantContextResolutionException)
+        {
+            return Task.CompletedTask;
+        }
 
-        if (canAccessTenant && canAccessBranch)
+        var branchAccess = tenantContext.Staff.Role switch
+        {
+            TenantStaffRole.TenantAdmin => BranchAccess.TenantAdmin(),
+            TenantStaffRole.BranchManager => BranchAccess.BranchManager(
+                tenantContext.AllowedBranches.Select(branch => branch.BranchId)),
+            TenantStaffRole.Receptionist => BranchAccess.Receptionist(
+                tenantContext.AllowedBranches.Select(branch => branch.BranchId)),
+            _ => null
+        };
+
+        if (tenantContext.TenantId == tenantId && branchAccess?.CanAccess(branchId) == true)
         {
             context.Succeed(requirement);
         }
 
         return Task.CompletedTask;
     }
-
-    private static bool HasIdClaim(AuthorizationHandlerContext context, string claimType, Guid id) =>
-        context.User.Claims.Any(claim =>
-            claim.Type == claimType
-            && Guid.TryParse(claim.Value, out var claimId)
-            && claimId == id);
 }
