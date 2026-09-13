@@ -28,9 +28,9 @@ Do not mark a scenario complete until all applicable tasks are done:
   roles, branch access assignments, and tenant-scoped operational records.
 - [x] Add repositories/query methods that require tenant scope for members,
   plans, subscriptions, payments, check-ins, audit entries, and reports.
-- [ ] Add `GET /api/context` or equivalent authenticated endpoint that returns
+- [x] Add `GET /api/context` or equivalent authenticated endpoint that returns
   the tenant context and allowed branch list for the current staff user.
-- [ ] Update JWT claim conventions and authorization handlers to validate tenant
+- [x] Update JWT claim conventions and authorization handlers to validate tenant
   ID, staff ID, role, and branch access consistently.
 - [ ] Add backend unit and API tests for missing, malformed, and conflicting
   tenant/branch claims.

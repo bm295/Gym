@@ -54,6 +54,17 @@ public sealed class ClaimsTenantContextResolverTests
         Assert.Throws<TenantContextResolutionException>(() => _resolver.Resolve(Principal(claims.ToArray())));
     }
 
+    [Theory]
+    [InlineData(TenantClaimTypes.TenantId, "00000000-0000-0000-0000-000000000001")]
+    [InlineData(TenantClaimTypes.StaffUserId, "00000000-0000-0000-0000-000000000001")]
+    [InlineData(TenantClaimTypes.StaffRole, nameof(TenantStaffRole.TenantAdmin))]
+    public void Rejects_conflicting_identity_and_role_claims(string claimType, string conflictingValue)
+    {
+        var claims = ValidClaims().Append(new Claim(claimType, conflictingValue));
+
+        Assert.Throws<TenantContextResolutionException>(() => _resolver.Resolve(Principal(claims.ToArray())));
+    }
+
     private static Claim[] ValidClaims() =>
     [
         new Claim(TenantClaimTypes.TenantId, Guid.NewGuid().ToString()),

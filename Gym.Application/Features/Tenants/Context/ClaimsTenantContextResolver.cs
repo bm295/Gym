@@ -16,8 +16,8 @@ public sealed class ClaimsTenantContextResolver : ITenantContextResolver
         var tenantId = ParseGuidClaim(principal, TenantClaimTypes.TenantId, "tenant ID");
         var tenantName = RequiredClaim(principal, TenantClaimTypes.TenantName, "tenant name");
         var staffUserId = ParseStaffUserId(principal);
-        var displayName = RequiredClaim(principal, ClaimTypes.Name, "staff display name");
-        var role = ParseRole(RequiredClaim(principal, ClaimTypes.Role, "staff role"));
+        var displayName = RequiredClaim(principal, TenantClaimTypes.StaffDisplayName, "staff display name");
+        var role = ParseRole(RequiredClaim(principal, TenantClaimTypes.StaffRole, "staff role"));
         var branches = principal.FindAll(TenantClaimTypes.BranchContext)
             .Select(claim => ParseBranch(claim.Value))
             .ToArray();
@@ -41,10 +41,22 @@ public sealed class ClaimsTenantContextResolver : ITenantContextResolver
 
     private static Guid ParseStaffUserId(ClaimsPrincipal principal)
     {
-        var value = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? principal.FindFirst("sub")?.Value;
+        var values = principal.FindAll(TenantClaimTypes.StaffUserId)
+            .Concat(principal.FindAll("sub"))
+            .Select(claim => claim.Value)
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
 
-        return Guid.TryParse(value, out var staffUserId)
+        if (values.Length != 1)
+        {
+            throw new TenantContextResolutionException(
+                values.Length == 0
+                    ? "The authenticated principal is missing a staff user ID claim."
+                    : "The authenticated principal has conflicting staff user ID claims.");
+        }
+
+        return Guid.TryParse(values[0], out var staffUserId)
             ? staffUserId
             : throw new TenantContextResolutionException("The authenticated principal has an invalid staff user ID.");
     }
@@ -59,10 +71,20 @@ public sealed class ClaimsTenantContextResolver : ITenantContextResolver
 
     private static string RequiredClaim(ClaimsPrincipal principal, string claimType, string description)
     {
-        var value = principal.FindFirst(claimType)?.Value;
-        return !string.IsNullOrWhiteSpace(value)
-            ? value
-            : throw new TenantContextResolutionException($"The authenticated principal is missing a {description} claim.");
+        var values = principal.FindAll(claimType)
+            .Select(claim => claim.Value?.Trim())
+            .Where(value => !string.IsNullOrWhiteSpace(value))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        return values.Length switch
+        {
+            1 => values[0]!,
+            0 => throw new TenantContextResolutionException(
+                $"The authenticated principal is missing a {description} claim."),
+            _ => throw new TenantContextResolutionException(
+                $"The authenticated principal has conflicting {description} claims.")
+        };
     }
 
     private static TenantStaffRole ParseRole(string value) =>
