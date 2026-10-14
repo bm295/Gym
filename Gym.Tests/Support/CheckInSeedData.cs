@@ -30,7 +30,7 @@ internal static class CheckInSeedData
         UpdatedAt = Timestamp
     };
 
-    public static Subscription ActiveSubscription(Guid tenantId, Guid memberId, Guid branchId, Guid? id = null) => new()
+    public static Subscription ActiveSubscription(Guid tenantId, Guid memberId, Guid branchId, Guid? id = null, int? remainingVisits = null) => new()
     {
         Id = id ?? Guid.NewGuid(),
         TenantId = tenantId,
@@ -43,6 +43,8 @@ internal static class CheckInSeedData
         SalePrice = 500_000m,
         AmountPaid = 500_000m,
         Currency = "VND",
+        RemainingVisits = remainingVisits,
+        VisitLimitSnapshot = remainingVisits,
         AllowCrossBranchSnapshot = false,
         PlanNameSnapshot = "Monthly",
         DurationDaysSnapshot = 31,

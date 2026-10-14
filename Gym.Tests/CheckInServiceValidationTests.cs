@@ -72,6 +72,7 @@ public sealed class CheckInServiceValidationTests
 
         Assert.Equal(CheckInRejectionReason.BranchNotPermitted, result.RejectionReason);
         AssertNoCheckIns(context);
+        Assert.Equal(3, context.Subscription.RemainingVisits);
     }
 
     [Fact]
@@ -86,6 +87,7 @@ public sealed class CheckInServiceValidationTests
 
         Assert.Equal(CheckInRejectionReason.BranchNotPermitted, result.RejectionReason);
         AssertNoCheckIns(context);
+        Assert.Equal(3, context.Subscription.RemainingVisits);
     }
 
     [Fact]
@@ -102,6 +104,7 @@ public sealed class CheckInServiceValidationTests
         var result = context.Service.CheckIn(context.Request);
 
         Assert.Equal(CheckInRejectionReason.DuplicateCheckIn, result.RejectionReason);
+        Assert.Equal(3, context.Subscription.RemainingVisits);
         Assert.Single(context.Store.GetCheckInsByMemberAndBranchSince(
             context.Request.TenantId, context.Member.Id, context.Request.BranchId, DateTimeOffset.MinValue));
     }
@@ -137,7 +140,7 @@ public sealed class CheckInServiceValidationTests
         var branch = CheckInSeedData.ActiveBranch(tenantId);
         var seededMember = CheckInSeedData.ActiveMember(tenantId);
         var member = CopyMemberWithStatus(seededMember, memberStatus);
-        var seededSubscription = CheckInSeedData.ActiveSubscription(tenantId, member.Id, branch.Id);
+        var seededSubscription = CheckInSeedData.ActiveSubscription(tenantId, member.Id, branch.Id, remainingVisits: 3);
         var subscription = CopySubscription(
             seededSubscription,
             subscriptionStatus,
@@ -166,6 +169,7 @@ public sealed class CheckInServiceValidationTests
         Assert.False(result.IsSuccess);
         Assert.Equal(reason, result.RejectionReason);
         AssertNoCheckIns(context);
+        Assert.Equal(3, context.Subscription.RemainingVisits);
     }
 
     private static void AssertNoCheckIns(TestContext context) =>
