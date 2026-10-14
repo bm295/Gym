@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using Gym.Application;
 using Gym.Application.Contracts.CheckIns;
 using Gym.Application.Contracts.Tenants;
 using Gym.Domain;
@@ -66,6 +67,7 @@ internal sealed class CheckInApiFactory(Guid tenantId, Guid branchId) : WebAppli
         builder.UseEnvironment("Development");
         builder.ConfigureTestServices(services =>
         {
+            services.AddSingleton<IUtcClock>(new CheckInTestClock());
             services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = TestAuthenticationHandler.SchemeName;
@@ -78,6 +80,11 @@ internal sealed class CheckInApiFactory(Guid tenantId, Guid branchId) : WebAppli
                 });
         });
     }
+}
+
+internal sealed class CheckInTestClock : IUtcClock
+{
+    public DateTimeOffset UtcNow => CheckInSeedData.Timestamp;
 }
 
 internal sealed class TestAuthenticationHandler(
