@@ -94,6 +94,7 @@ public sealed class CheckInService(
             Note = request.Note
         };
         checkIns.Add(checkIn);
+        subscription.ConsumeVisit();
         operationLogger.LogSuccessfulCheckIn(checkIn);
 
         return CheckInResult.Success(checkIn.Id);
