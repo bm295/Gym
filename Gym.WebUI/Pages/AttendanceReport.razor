@@ -1,0 +1,89 @@
+@page "/prototype/reports"
+@implements IDisposable
+@using Gym.Application.Reports
+@using Gym.WebUI.Services.Prototype
+@using Gym.WebUI.Services.Ui
+@inject IPrototypeGymState State
+@inject IAppShellState Shell
+
+<PageTitle>Attendance report · GymOS</PageTitle>
+<UiPageHeader Eyebrow="Reports" Title="Attendance habits" Description="@($"Attendance at {Shell.SelectedBranch.Name} · Vietnam time (UTC+07:00)")" />
+<UiPrototypeBanner />
+<UiCard Title="Report period" Description="Calculated from check-ins in this browser session. Includes every calendar day, even days with no visits. The default period is the last 30 completed days.">
+    <form @onsubmit="Apply" @onsubmit:preventDefault>
+        <div class="prototype-form">
+            <label>Start date<input id="attendance-start" class="form-control" type="date" @bind="startDate" /></label>
+            <label>End date<input id="attendance-end" class="form-control" type="date" @bind="endDate" /></label>
+            <UiButton Type="submit">Apply period</UiButton>
+        </div>
+    </form>
+    @if (error is not null) { <p role="alert" class="alert alert-danger">@error</p> }
+</UiCard>
+@if (report is not null)
+{
+    <p>Period: @report.StartDate.ToString("dd/MM/yyyy") – @report.EndDate.ToString("dd/MM/yyyy") · @report.Days.Count calendar days</p>
+    <div class="dashboard-metrics">
+        <UiCard Class="dashboard-metric"><span>Total check-ins</span><strong>@report.TotalCheckIns</strong><small>Visits, including repeat visits</small></UiCard>
+        <UiCard Class="dashboard-metric"><span>Daily average</span><strong>@report.MeanDailyCheckIns.ToString("F1")</strong><small>Check-ins per calendar day</small></UiCard>
+        <UiCard Class="dashboard-metric"><span>Daily median</span><strong>@report.MedianDailyCheckIns.ToString("F1")</strong><small>Middle daily count; less affected by busy days</small></UiCard>
+        <UiCard Class="dashboard-metric"><span>Most common daily count</span><strong>@report.ModeDailyCheckIns</strong><small>Smallest count shown when tied</small></UiCard>
+        <UiCard Class="dashboard-metric"><span>Daily standard deviation</span><strong>@report.DailyStandardDeviation.ToString("F1")</strong><small>Population deviation across selected days; higher means more variation</small></UiCard>
+        <UiCard Class="dashboard-metric"><span>Busiest arrival hours</span><strong>@PeakHours</strong><small>All tied hourly peaks are shown</small></UiCard>
+    </div>
+    @if (report.TotalCheckIns == 0)
+    {
+        <UiEmptyState Title="No check-ins in this period" Description="Choose another period or branch. Zero counts include days with no recorded visits." />
+    }
+    <UiCard Title="Attendance by day" Description="Use the daily pattern to compare quiet and busy days. These figures describe recorded visits, not a forecast.">
+        <UiDataTable Label="Daily attendance"><thead><tr><th>Date</th><th>Day</th><th>Check-ins</th></tr></thead><tbody>
+            @foreach (var day in report.Days) { <tr><td>@day.Date.ToString("dd/MM/yyyy")</td><td>@day.Date.DayOfWeek</td><td>@day.CheckIns</td></tr> }
+        </tbody></UiDataTable>
+    </UiCard>
+    <UiCard Title="Arrival hours" Description="Counts arrivals in each hour across the selected period; does not measure how many people are in the gym at once.">
+        <UiDataTable Label="Hourly attendance"><thead><tr><th>Local hour</th><th>Check-ins</th></tr></thead><tbody>
+            @foreach (var hour in report.Hours) { <tr><td>@HourLabel(hour.Hour)</td><td>@hour.CheckIns</td></tr> }
+        </tbody></UiDataTable>
+    </UiCard>
+}
+
+@code {
+    private static readonly TimeZoneInfo VietnamTime = TimeZoneInfo.FindSystemTimeZoneById("Asia/Ho_Chi_Minh");
+    private DateTime startDate;
+    private DateTime endDate;
+    private string? error;
+    private Gym.Application.Contracts.Reports.AttendanceReport? report;
+    private string PeakHours => report is null || report.PeakHours.Count == 0 ? "—" : string.Join(", ", report.PeakHours.Select(HourLabel));
+    private static string HourLabel(int hour) => $"{hour:00}:00–{hour + 1:00}:00";
+
+    protected override void OnInitialized()
+    {
+        endDate = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, VietnamTime).Date.AddDays(-1);
+        startDate = endDate.AddDays(-29);
+        Shell.Changed += Refresh;
+        State.Changed += Refresh;
+        Apply();
+    }
+
+    private void Apply()
+    {
+        var start = DateOnly.FromDateTime(startDate);
+        var end = DateOnly.FromDateTime(endDate);
+        if (end.DayNumber - start.DayNumber is < 0 or > 365)
+        {
+            error = "Select between 1 and 366 calendar days.";
+            report = null;
+            return;
+        }
+        error = null;
+        report = AttendanceReportCalculator.Calculate(
+            State.CheckIns.Where(item => item.BranchId == Shell.SelectedBranch.Id).Select(item => item.CheckedInAt),
+            start, end, VietnamTime);
+    }
+
+    private void Refresh() => _ = InvokeAsync(() => { Apply(); StateHasChanged(); });
+    public void Dispose()
+    {
+        Shell.Changed -= Refresh;
+        State.Changed -= Refresh;
+    }
+}
