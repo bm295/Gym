@@ -6,4 +6,5 @@ public interface ITenantReportQuery
 {
     TenantOperationalReport GetOperationalReport(Guid tenantId);
     AttendanceReport GetAttendanceReport(Guid tenantId, Guid branchId, DateOnly startDate, DateOnly endDate, TimeZoneInfo timeZone);
+    MembershipUtilizationReport GetMembershipUtilizationReport(Guid tenantId, Guid branchId, DateOnly startDate, DateOnly endDate);
 }
