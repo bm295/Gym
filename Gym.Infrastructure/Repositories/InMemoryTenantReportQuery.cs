@@ -12,6 +12,13 @@ public sealed class InMemoryTenantReportQuery(InMemoryGymDataStore store) : ITen
             store.GetCheckIns(tenantId).Where(item => item.BranchId == branchId).Select(item => item.CheckedInAt),
             startDate, endDate, timeZone);
 
+    public MembershipUtilizationReport GetMembershipUtilizationReport(Guid tenantId, Guid branchId, DateOnly startDate, DateOnly endDate) =>
+        MembershipAnalyticsCalculator.Calculate(startDate, endDate,
+            store.GetSubscriptions(tenantId)
+                .Where(subscription => subscription.HomeBranchId == branchId
+                    && subscription.Status == SubscriptionStatus.Active)
+                .Select(subscription => (subscription.StartDate, subscription.EndDate)));
+
     public TenantOperationalReport GetOperationalReport(Guid tenantId) => new(
         tenantId,
         store.GetMembers(tenantId).Count,
