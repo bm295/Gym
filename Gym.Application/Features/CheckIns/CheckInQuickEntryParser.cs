@@ -32,13 +32,13 @@ public static class CheckInQuickEntryParser
     private static bool TryParseCommand(string compact, out string identifier)
     {
         identifier = string.Empty;
-        var memo = new Dictionary<int, bool>();
+        var memo = new HashSet<int>();
         return ParseAt(0);
 
         bool ParseAt(int position)
         {
-            if (memo.TryGetValue(position, out var cached))
-                return cached;
+            if (memo.Contains(position))
+                return false;
 
             foreach (var command in Commands.OrderByDescending(x => x.Length))
             {
@@ -55,14 +55,15 @@ public static class CheckInQuickEntryParser
                 if (LooksLikeIdentifier(suffix))
                 {
                     identifier = suffix;
-                    return memo[position] = true;
+                    return true;
                 }
 
                 if (ParseAt(next))
                     return memo[position] = true;
             }
 
-            return memo[position] = false;
+            memo.Add(position);
+            return false;
         }
     }
 
