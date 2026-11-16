@@ -28,6 +28,23 @@ public sealed class CheckInUiTests : TestContext
         Assert.Contains(expectedHeading, cut.Markup);
     }
 
+    [Theory]
+    [InlineData("checkinMEM-1001")]
+    [InlineData("check in MEM-1001")]
+    [InlineData("checkin0901234567")]
+    public void Check_in_supports_quick_entry_commands(string command)
+    {
+        Services.AddSingleton<IPrototypeGymState, PrototypeGymState>();
+        Services.AddSingleton<IAppShellState, AppShellState>();
+        var cut = RenderComponent<CheckIn>();
+
+        cut.Find("#member-lookup").Change(command);
+        cut.Find("form").Submit();
+
+        Assert.Contains("Nguyen An", cut.Markup);
+        Assert.Contains("Confirm check-in", cut.Markup);
+    }
+
     [Fact]
     public void Unknown_member_shows_an_actionable_lookup_error()
     {
